@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_taxcloud_log_manager,taxcloud.log.manager,taxcloud.log,account.group_account_manager,r,
+access_taxcloud_log_system,taxcloud.log.system,taxcloud.log,base.group_system,rd,
+access_taxcloud_address_verify_user,taxcloud.address.verify.user,taxcloud.address.verify,base.group_user,cru,
+taxcloud_log_comp_rule,TaxCloud log multi-company,taxcloud.log,,crud,"[('company_id', 'in', company_ids)]"

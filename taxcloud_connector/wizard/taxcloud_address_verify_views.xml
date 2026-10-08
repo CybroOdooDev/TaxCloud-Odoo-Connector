@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="taxcloud_address_verify_view_form" model="ir.ui.view">
+        <field name="name">taxcloud.address.verify.form</field>
+        <field name="model">taxcloud.address.verify</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="partner_id" invisible="1"/>
+                <div class="alert alert-success" role="alert" invisible="not is_already_valid">
+                    TaxCloud confirms this address as entered.
+                </div>
+                <group>
+                    <group string="Current Address">
+                        <field name="street"/>
+                        <field name="street2" string=""/>
+                        <field name="city"/>
+                        <field name="state_id"/>
+                        <field name="zip"/>
+                        <field name="country_id"/>
+                    </group>
+                    <group string="TaxCloud Suggestion">
+                        <field name="suggested_street" string="Street"/>
+                        <field name="suggested_street2" string=""/>
+                        <field name="suggested_city" string="City"/>
+                        <field name="suggested_state_id" string="State"/>
+                        <field name="suggested_zip" string="ZIP"/>
+                        <field name="suggested_country_id" string="Country"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_apply_suggestion" type="object" class="oe_highlight" data-hotkey="q"
+                            string="Apply Suggestion" invisible="is_already_valid"/>
+                    <button name="action_apply_suggestion" type="object" class="oe_highlight" data-hotkey="q"
+                            string="Mark as Verified" invisible="not is_already_valid"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

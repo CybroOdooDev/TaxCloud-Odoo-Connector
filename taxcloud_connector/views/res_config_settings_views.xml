@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_taxcloud" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.taxcloud</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <setting id="rounding_method" position="after">
+                <setting id="taxcloud_settings" string="TaxCloud" company_dependent="1"
+                         help="Compute US sales tax, verify addresses and report transactions with TaxCloud."
+                         invisible="country_code != 'US'">
+                    <div class="content-group">
+                        <div class="row mt16">
+                            <label string="API Key" for="taxcloud_api_key" class="col-lg-4 o_light_label"/>
+                            <field name="taxcloud_api_key" password="True"/>
+                        </div>
+                        <div class="row">
+                            <label string="Connection ID" for="taxcloud_connection_id" class="col-lg-4 o_light_label"/>
+                            <field name="taxcloud_connection_id"/>
+                        </div>
+                        <div class="row">
+                            <label string="Tax Template" for="taxcloud_tax_template_id" class="col-lg-4 o_light_label"/>
+                            <field name="taxcloud_tax_template_id" options="{'no_create': True}"/>
+                        </div>
+                        <div class="row">
+                            <label string="Default TIC" for="taxcloud_default_tic" class="col-lg-4 o_light_label"/>
+                            <field name="taxcloud_default_tic"/>
+                        </div>
+                        <div class="row">
+                            <label string="Verify Addresses" for="taxcloud_verify_address" class="col-lg-4 o_light_label"/>
+                            <field name="taxcloud_verify_address" class="w-auto"/>
+                        </div>
+                        <div class="row">
+                            <label string="Debug Logging" for="taxcloud_debug_logging" class="col-lg-4 o_light_label"/>
+                            <field name="taxcloud_debug_logging" class="w-auto"/>
+                        </div>
+                        <div class="row">
+                            <label string="Log Retention (Days)" for="taxcloud_log_retention_days" class="col-lg-4 o_light_label"/>
+                            <field name="taxcloud_log_retention_days"/>
+                        </div>
+                        <div class="mt16">
+                            <button name="action_taxcloud_test_connection" type="object" class="btn-link"
+                                    invisible="not taxcloud_connection_id">
+                                <i class="fa fa-plug fa-fw" role="img" aria-label="Test connection" title="Test connection"/>
+                                Test Connection
+                            </button>
+                            <button name="%(taxcloud_connector.action_taxcloud_log)d" type="action" class="btn-link">
+                                <i class="fa fa-file-text-o fa-fw" role="img" aria-label="Show logs" title="Show logs"/>
+                                Show Logs
+                            </button>
+                        </div>
+                    </div>
+                </setting>
+            </setting>
+        </field>
+    </record>
+</odoo>

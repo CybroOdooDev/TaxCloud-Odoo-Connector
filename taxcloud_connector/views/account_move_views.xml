@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_inherit_taxcloud" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.taxcloud</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="/form/sheet" position="before">
+                <div class="alert alert-danger mb-0" role="alert" invisible="taxcloud_sync_state != 'error'">
+                    <strong>TaxCloud reporting failed:</strong>
+                    <field name="taxcloud_sync_error" class="d-inline" readonly="1"/>
+                    <button name="action_taxcloud_retry_report" type="object" string="Retry"
+                            class="btn-link p-0 ms-2 align-baseline"
+                            groups="account.group_account_invoice"/>
+                </div>
+                <div class="alert alert-warning mb-0" role="alert"
+                     invisible="taxcloud_sync_state != 'to_sync' or not taxcloud_sync_error">
+                    <strong>TaxCloud reporting will be retried</strong>
+                    (attempt <field name="taxcloud_sync_attempts" class="d-inline" readonly="1"/> of 5):
+                    <field name="taxcloud_sync_error" class="d-inline" readonly="1"/>
+                </div>
+                <div class="alert alert-info mb-0" role="alert" invisible="not taxcloud_waiting_for_origin">
+                    This refund will be reported to TaxCloud once the original invoice has been reported.
+                </div>
+            </xpath>
+            <button name="button_draft" position="after">
+                <field name="is_taxcloud_computed" invisible="1"/>
+                <button name="action_taxcloud_compute_taxes"
+                        type="object"
+                        string="Compute Taxes"
+                        invisible="state != 'draft' or is_move_sent or not is_taxcloud_computed"
+                        groups="account.group_account_invoice"/>
+            </button>
+            <xpath expr="//field[@id='document_tax_mode_mobile']" position="attributes">
+                <attribute name="invisible" add="is_taxcloud_computed" separator="or"/>
+            </xpath>
+            <xpath expr="//field[@id='document_tax_mode']" position="attributes">
+                <attribute name="invisible" add="is_taxcloud_computed" separator="or"/>
+            </xpath>
+            <group name="sale_info_group" position="inside">
+                <field name="taxcloud_sync_state" invisible="not taxcloud_sync_state"/>
+                <field name="taxcloud_order_id" invisible="not taxcloud_order_id"/>
+                <field name="taxcloud_synced_date" invisible="not taxcloud_synced_date"/>
+            </group>
+        </field>
+    </record>
+
+    <record id="view_account_invoice_filter_inherit_taxcloud" model="ir.ui.view">
+        <field name="name">account.invoice.select.inherit.taxcloud</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <filter name="cancel" position="after">
+                <separator/>
+                <filter name="taxcloud_error" string="TaxCloud Errors" domain="[('taxcloud_sync_state', '=', 'error')]"/>
+                <filter name="taxcloud_pending" string="TaxCloud Pending" domain="[('taxcloud_sync_state', '=', 'to_sync')]"/>
+            </filter>
+        </field>
+    </record>
+</odoo>

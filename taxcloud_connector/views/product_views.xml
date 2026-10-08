@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_view_inherit_taxcloud" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.taxcloud</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="account.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='invoicing']/group[@name='accounting']" position="inside">
+                <group string="TaxCloud" name="taxcloud">
+                    <field name="taxcloud_tic" placeholder="From Category"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_category_form_view_inherit_taxcloud" model="ir.ui.view">
+        <field name="name">product.category.form.inherit.taxcloud</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="account.view_category_property_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='accounting']//group[@name='properties']" position="after">
+                <group string="TaxCloud" name="taxcloud">
+                    <field name="taxcloud_tic" placeholder="From Parent Category / Company"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

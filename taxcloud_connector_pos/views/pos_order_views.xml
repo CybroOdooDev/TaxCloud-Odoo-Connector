@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_pos_form_inherit_taxcloud" model="ir.ui.view">
+        <field name="name">pos.order.form.inherit.taxcloud</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="/form/sheet" position="before">
+                <div class="alert alert-danger mb-0" role="alert" invisible="taxcloud_sync_state != 'error'">
+                    <strong>TaxCloud reporting failed:</strong>
+                    <field name="taxcloud_sync_error" class="d-inline" readonly="1"/>
+                    <button name="action_taxcloud_retry_report" type="object" string="Retry"
+                            class="btn-link p-0 ms-2 align-baseline"
+                            groups="point_of_sale.group_pos_manager"/>
+                </div>
+                <div class="alert alert-warning mb-0" role="alert"
+                     invisible="taxcloud_sync_state != 'to_sync' or not taxcloud_sync_error">
+                    <strong>TaxCloud reporting will be retried</strong>
+                    (attempt <field name="taxcloud_sync_attempts" class="d-inline" readonly="1"/> of 5):
+                    <field name="taxcloud_sync_error" class="d-inline" readonly="1"/>
+                </div>
+                <div class="alert alert-info mb-0" role="alert" invisible="not taxcloud_waiting_for_origin">
+                    This refund will be reported to TaxCloud once the original order has been reported.
+                </div>
+            </xpath>
+            <group name="other_information" position="inside">
+                <field name="taxcloud_sync_state" invisible="not taxcloud_sync_state"/>
+                <field name="taxcloud_order_id" invisible="not taxcloud_order_id"/>
+                <field name="taxcloud_synced_date" invisible="not taxcloud_synced_date"/>
+            </group>
+        </field>
+    </record>
+
+    <record id="view_pos_order_filter_inherit_taxcloud" model="ir.ui.view">
+        <field name="name">pos.order.select.inherit.taxcloud</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_order_filter"/>
+        <field name="arch" type="xml">
+            <filter name="cancelled" position="after">
+                <separator/>
+                <filter name="taxcloud_error" string="TaxCloud Errors" domain="[('taxcloud_sync_state', '=', 'error')]"/>
+                <filter name="taxcloud_pending" string="TaxCloud Pending" domain="[('taxcloud_sync_state', '=', 'to_sync')]"/>
+            </filter>
+        </field>
+    </record>
+</odoo>

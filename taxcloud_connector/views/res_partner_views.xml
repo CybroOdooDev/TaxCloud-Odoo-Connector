@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_taxcloud" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.taxcloud</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='partner_address_country']" position="inside">
+                <span class="badge text-bg-success align-self-center"
+                      invisible="not taxcloud_address_verified">Verified</span>
+                <button class="btn-link text-nowrap"
+                        type="object"
+                        name="action_taxcloud_verify_address"
+                        string="Verify"
+                        invisible="not taxcloud_show_address_verification or taxcloud_address_verified"/>
+            </xpath>
+            <xpath expr="//group[@name='fiscal_information']" position="inside">
+                <field name="taxcloud_exemption_id" invisible="parent_id"/>
+            </xpath>
+            <group name="misc" position="inside">
+                <field name="taxcloud_address_verified" readonly="1" invisible="not taxcloud_address_verified"/>
+                <field name="taxcloud_verified_date" invisible="not taxcloud_address_verified"/>
+            </group>
+        </field>
+    </record>
+</odoo>
