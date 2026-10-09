@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
             <xpath expr="//div[@name='partner_address_country']" position="inside">
-                <span class="badge text-bg-success align-self-center"
+                <span class="badge text-bg-success align-self-center text-nowrap flex-shrink-0 ms-1"
                       invisible="not taxcloud_address_verified">Verified</span>
                 <button class="btn-link text-nowrap"
                         type="object"

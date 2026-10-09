@@ -39,12 +39,12 @@
                             <field name="taxcloud_log_retention_days"/>
                         </div>
                         <div class="mt16">
-                            <button name="action_taxcloud_test_connection" type="object" class="btn-link"
+                            <button name="action_taxcloud_test_connection" type="object" class="btn btn-secondary me-2"
                                     invisible="not taxcloud_connection_id">
                                 <i class="fa fa-plug fa-fw" role="img" aria-label="Test connection" title="Test connection"/>
                                 Test Connection
                             </button>
-                            <button name="%(taxcloud_connector.action_taxcloud_log)d" type="action" class="btn-link">
+                            <button name="%(taxcloud_connector.action_taxcloud_log)d" type="action" class="btn btn-secondary">
                                 <i class="fa fa-file-text-o fa-fw" role="img" aria-label="Show logs" title="Show logs"/>
                                 Show Logs
                             </button>
