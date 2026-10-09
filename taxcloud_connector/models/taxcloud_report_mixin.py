@@ -184,24 +184,40 @@ class TaxCloudReportMixin(models.AbstractModel):
         try:
             client.convert_cart_to_order(cart['cartId'], order_id, completed=True, completed_date=completed_date)
         except TaxCloudError as e:
-            if e.is_retryable or not self._taxcloud_order_exists(client, order_id, cart['customerId']):
+            if e.is_retryable or not self._taxcloud_order_exists(client, order_id, cart):
                 raise
             _logger.info("TaxCloud order %s already exists, counting %s as reported", order_id, self.display_name)
         self.taxcloud_order_id = order_id
 
-    def _taxcloud_order_exists(self, client, order_id, customer_id):
-        """ Idempotent retry: a previous attempt may have created the order before failing. """
+    def _taxcloud_order_exists(self, client, order_id, cart):
+        """ Idempotent retry: a previous attempt may have created the order before failing.
+
+        Order IDs are document numbers, so another document or another database sharing the
+        connection (e.g. a staging copy) can have used the same ID: the existing order only counts
+        as this document's when it has the same customer and items. """
         try:
             order = client.get_order(order_id)
         except TaxCloudError as e:
             if e.status_code == 404:
                 return False
             raise
-        if str(order.get('customerId')) != str(customer_id):
+        if str(order.get('customerId')) != str(cart['customerId']):
             raise UserError(self.env._(
                 "TaxCloud order %(order)s already exists for another customer.", order=order_id,
             ))
+        if self._taxcloud_get_items_signature(order.get('lineItems')) != self._taxcloud_get_items_signature(cart['lineItems']):
+            raise UserError(self.env._(
+                "TaxCloud order %(order)s already exists with other items. It was probably reported by another "
+                "document or by another database using the same TaxCloud connection.", order=order_id,
+            ))
         return True
+
+    @api.model
+    def _taxcloud_get_items_signature(self, line_items):
+        return sorted(
+            (str(item.get('itemId')), round(float(item.get('quantity') or 0.0), 6), round(float(item.get('price') or 0.0), 6))
+            for item in line_items or []
+        )
 
     def _taxcloud_get_refund_idempotency_key(self):
         return f"odoo-{self._taxcloud_get_dbuuid()[:8]}-{self._name}-refund-{self.id}"
@@ -255,7 +271,7 @@ class TaxCloudReportMixin(models.AbstractModel):
         try:
             client.create_order(order)
         except TaxCloudError as e:
-            if e.is_retryable or not self._taxcloud_order_exists(client, order_id, cart['customerId']):
+            if e.is_retryable or not self._taxcloud_order_exists(client, order_id, cart):
                 raise
         self.taxcloud_order_id = order_id
 

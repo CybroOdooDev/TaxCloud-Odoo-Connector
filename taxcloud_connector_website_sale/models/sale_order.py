@@ -29,7 +29,11 @@ class SaleOrder(models.Model):
         except UserError as e:
             # Refresh the rest of the cart without calling TaxCloud again (on Enterprise,
             # website_sale_external_tax would turn the same error into its own alert).
+            alerts = self._get_alerts()
             super(SaleOrder, self.with_context(taxcloud_skip_computation=True))._update_cart_taxes_and_prices(**kwargs)
+            # The refresh drops the TaxCloud taxes, so Odoo warns that prices changed: the blocking
+            # alert below is the actual reason.
+            self.alerts = alerts + [alert for alert in self._get_alerts()[len(alerts):] if alert['level'] != 'warning'] or False
             self._add_blocking_alert(self._taxcloud_get_error_message(e))
             return True
         try:

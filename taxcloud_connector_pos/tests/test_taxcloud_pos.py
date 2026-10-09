@@ -106,8 +106,11 @@ class TestTaxCloudPos(TaxCloudInvoiceCommon):
         order = self._pay_button(self._order_data())
         self.assertTrue(order.is_taxcloud_computed)
         self.assertTrue(order.lines.tax_ids.is_taxcloud)
-        order._compute_prices()
-        self.assertAlmostEqual(order.amount_tax, round(100.0 * self.RATE, 2))
+        self.assertAlmostEqual(order.amount_tax, round(100.0 * self.RATE, 2), msg="Totals refreshed with TaxCloud's tax")
+        self.assertFalse(
+            order.message_ids.filtered(lambda message: 'differs from TaxCloud' in (message.body or '')),
+            "No false mismatch note",
+        )
         cart = self.carts_sent[-1]['carts'][0]
         self.assertEqual(cart['destination']['line1'], '100 Origin Way', "Sold at the counter: taxed at the shop")
         self.assertEqual(cart['customerId'], f'{self.company.id}-anonymous')
@@ -132,8 +135,19 @@ class TestTaxCloudPos(TaxCloudInvoiceCommon):
 
     def test_unavailable_blocks_payment(self):
         self.create_carts.side_effect = TaxCloudError('Service Unavailable', 503)
-        with self.assertRaisesRegex(UserError, 'Service Unavailable'):
+        with self.assertRaises(UserError) as error:
             self._pay_button(self._order_data())
+        message = str(error.exception)
+        self.assertIn('could not be reached', message)
+        self.assertNotIn('Service Unavailable', message, "The cashier gets no technical details")
+
+    def test_rejected_order_named_by_receipt_number(self):
+        self.create_carts.side_effect = TaxCloudError('validation failed', 422)
+        with self.assertRaises(UserError) as error:
+            self._pay_button(self._order_data())
+        message = str(error.exception)
+        self.assertIn('validation failed', message)
+        self.assertNotIn('taxes of /', message, "Draft orders are named by their receipt number")
 
     # Reporting
     # =========

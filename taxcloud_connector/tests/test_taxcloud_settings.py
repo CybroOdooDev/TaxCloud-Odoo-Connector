@@ -1,6 +1,7 @@
 # Part of Cybrosys Technologies Pvt. Ltd. See LICENSE file for full copyright and licensing details.
 from unittest.mock import patch
 
+from odoo import Command
 from odoo.exceptions import AccessError, RedirectWarning, UserError, ValidationError
 from odoo.tests import Form, tagged
 
@@ -98,3 +99,20 @@ class TestTaxCloudSettings(TaxCloudTestCommon):
             self.company.taxcloud_default_tic = 'x'
         with self.assertRaises(ValidationError):
             self.company.taxcloud_log_retention_days = -1
+
+    def test_tic_visible_without_full_accounting(self):
+        """ Community billing users lack 'Show Accounting Features', which hides the Accounting tabs:
+        the TIC must still be editable on products and categories. """
+        billing_user = self.env['res.users'].create({
+            'name': 'Billing', 'login': 'taxcloud_billing',
+            'company_id': self.company.id, 'company_ids': [Command.set(self.company.ids)],
+            'group_ids': [Command.set((self.env.ref('account.group_account_manager') | self.env.ref('product.group_product_manager')).ids)],
+        })
+        if self.env['ir.module.module']._get('accountant').state != 'installed':
+            # Enterprise's Accounting app gives billing administrators the accounting features.
+            self.assertFalse(billing_user.has_group('account.group_account_readonly'))
+        for model in ('product.template', 'product.category'):
+            with Form(self.env[model].with_user(billing_user)) as form:
+                form.name = 'TIC test'
+                form.taxcloud_tic = '20010'
+            self.assertEqual(form.record.taxcloud_tic, '20010', model)

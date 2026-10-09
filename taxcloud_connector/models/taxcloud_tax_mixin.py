@@ -7,7 +7,7 @@ from markupsafe import Markup
 
 from odoo import Command, api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools import html2plaintext
+from odoo.tools import format_amount, html2plaintext
 
 from odoo.addons.taxcloud_connector.services.taxcloud_client import TaxCloudError
 
@@ -94,6 +94,15 @@ class TaxCloudTaxMixin(models.AbstractModel):
         """ Return ``{line: (account.tax, amount)}`` to skip the TaxCloud call (e.g. reversals), or None. """
         return
 
+    def _taxcloud_get_document_name(self):
+        """ Name of the document in error messages. """
+        return self.display_name
+
+    def _taxcloud_refresh_amounts(self):
+        """ Update the document totals after the line taxes changed, for models whose totals are
+        not computed fields (e.g. pos.order). """
+        return
+
     # Entry points
     # ============
     def action_taxcloud_compute_taxes(self):
@@ -106,11 +115,13 @@ class TaxCloudTaxMixin(models.AbstractModel):
         if not eligible:
             return True
         eligible._taxcloud_set_taxes(eligible._taxcloud_get_taxes())
+        eligible._taxcloud_refresh_amounts()
         for record in eligible.filtered('taxcloud_cart_hash'):
             if record.currency_id.compare_amounts(record.amount_tax, record.taxcloud_tax_amount):
                 record._taxcloud_post_note(self.env._(
                     "Odoo's tax total (%(odoo)s) differs from TaxCloud's (%(taxcloud)s) after rounding.",
-                    odoo=record.amount_tax, taxcloud=record.taxcloud_tax_amount,
+                    odoo=format_amount(self.env, record.amount_tax, record.currency_id),
+                    taxcloud=format_amount(self.env, record.taxcloud_tax_amount, record.currency_id),
                 ))
         return True
 
@@ -127,7 +138,7 @@ class TaxCloudTaxMixin(models.AbstractModel):
                 unavailable |= isinstance(e, TaxCloudError) and e.is_retryable
                 errors.append(self.env._(
                     "TaxCloud could not compute the taxes of %(document)s:\n%(error)s",
-                    document=record.display_name, error=str(e),
+                    document=record._taxcloud_get_document_name(), error=str(e),
                 ))
         if errors:
             raise (TaxCloudUnavailableError if unavailable else UserError)('\n\n'.join(errors))
@@ -227,7 +238,7 @@ class TaxCloudTaxMixin(models.AbstractModel):
         self.write({
             'taxcloud_cart_hash': cart_hash,
             'taxcloud_cart_result': {str(line.id): [tax.id, amount] for line, (tax, amount) in amounts.items()},
-            'taxcloud_tax_amount': sum(amount for _tax, amount in amounts.values()),
+            'taxcloud_tax_amount': self.currency_id.round(sum(amount for _tax, amount in amounts.values())),
         })
         return self._taxcloud_apply_tax_amounts(base_lines, amounts)
 
@@ -358,7 +369,8 @@ class TaxCloudTaxMixin(models.AbstractModel):
 
     def _taxcloud_get_cached_amounts(self, line_by_index):
         """ The stored result as {line: (tax, amount)}, or None when it can no longer be used. """
-        result = self.taxcloud_cart_result
+        # A Json field stores {} as NULL: an empty result means TaxCloud returned no tax.
+        result = self.taxcloud_cart_result or {}
         if not isinstance(result, dict):
             return None
         lines = {str(line.id): line for line in line_by_index.values()}

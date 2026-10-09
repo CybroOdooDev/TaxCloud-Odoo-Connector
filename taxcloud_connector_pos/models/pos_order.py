@@ -2,6 +2,8 @@
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 
+from odoo.addons.taxcloud_connector.models.taxcloud_tax_mixin import TaxCloudUnavailableError
+
 
 class PosOrder(models.Model):
     _name = 'pos.order'
@@ -39,7 +41,13 @@ class PosOrder(models.Model):
         orders = self.browse([order['id'] for order in res['pos.order']]).filtered(lambda order: order.state == 'draft')
         results = {**res, 'pos.order': [], 'pos.order.line': [], 'account.tax': [], 'account.tax.group': []}
         for order in orders:
-            order.action_taxcloud_compute_taxes()
+            try:
+                order.action_taxcloud_compute_taxes()
+            except TaxCloudUnavailableError:
+                # The technical cause is in the TaxCloud logs; the cashier only needs to know what to do.
+                raise UserError(self.env._(
+                    "TaxCloud could not be reached, so this order cannot be paid yet. Check the connection and try again.",
+                ))
             config = order.config_id
             taxes = order.lines.tax_ids
             results['account.tax'] += self.env['account.tax']._load_pos_data_read(taxes, config)
@@ -100,6 +108,14 @@ class PosOrder(models.Model):
     def _taxcloud_is_delivered(self):
         is_shipped_later = 'shipping_date' in self._fields and self.shipping_date
         return bool(self.preset_id.identification == 'address' or is_shipped_later)
+
+    def _taxcloud_get_document_name(self):
+        """ Draft orders are named "/" until paid: use the receipt number. """
+        return self.pos_reference or self.display_name
+
+    def _taxcloud_refresh_amounts(self):
+        """ amount_tax and amount_total are stored values set by the POS, not computed fields. """
+        self._compute_prices()
 
     def _taxcloud_get_fixed_tax_amounts(self, base_lines):
         """ A refund returns the tax of the original lines, pro rata of the quantity, like a TaxCloud

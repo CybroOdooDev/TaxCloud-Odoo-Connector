@@ -334,3 +334,9 @@ class TestTaxCloudInvoice(TaxCloudInvoiceCommon):
             self.env['account.fiscal.position'].search_count([('company_id', '=', self.company.id), ('name', '=', fpos.name)]),
             1, "Idempotent",
         )
+        # Enabling auto-apply is enough: it comes before the chart's other US fiscal positions.
+        self.env['account.fiscal.position'].create({
+            'name': 'Domestic', 'auto_apply': True, 'country_id': self.us.id, 'company_id': self.company.id, 'sequence': 10,
+        })
+        fpos.auto_apply = True
+        self.assertEqual(self.env['account.fiscal.position'].with_company(self.company)._get_fiscal_position(self.partner_us), fpos)

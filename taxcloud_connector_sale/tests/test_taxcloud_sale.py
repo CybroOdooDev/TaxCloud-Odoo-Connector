@@ -93,6 +93,20 @@ class TestTaxCloudSale(TaxCloudInvoiceCommon):
         self.assertTrue(order.order_line.tax_ids.is_taxcloud)
         self.assertAlmostEqual(order.amount_tax, round(100.0 * self.RATE, 2))
 
+    def test_zero_tax_result_is_cached(self):
+        """ A cart TaxCloud taxes at 0 (e.g. no nexus in the destination state) is not sent again. """
+        order = self._order([self._so_line(self.product_book)])
+        self.tax_overrides[f'line-{order.order_line.id}'] = {'amount': 0.0, 'rate': 0.0}
+        with self._patch_carts() as create_carts:
+            order.action_taxcloud_compute_taxes()
+            order.invalidate_recordset(['taxcloud_cart_result'])  # read back what was stored
+            order.action_taxcloud_compute_taxes()
+            order.action_confirm()
+        self.assertEqual(create_carts.call_count, 1)
+        self.assertTrue(order.taxcloud_cart_hash)
+        self.assertFalse(order.order_line.tax_ids)
+        self.assertFalse(order.amount_tax)
+
     def test_discounts(self):
         order = self._order([
             self._so_line(self.product_book, quantity=2.0, discount=25.0),

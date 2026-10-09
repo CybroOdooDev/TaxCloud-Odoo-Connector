@@ -82,6 +82,18 @@ class TestTaxCloudWebsiteSale(TaxCloudInvoiceCommon):
         self.assertNotIn('address', messages[0])
         self.assertEqual(create_carts.call_count, 1, "The failure is not retried within the request")
 
+    def test_unavailable_after_computed_taxes_no_price_warning(self):
+        """ TaxCloud goes down after taxes were computed: the refresh removes them, but the customer
+        only sees why checkout is blocked, not a 'prices have changed' warning. """
+        order = self._cart_order()
+        with self._patch_carts():
+            order._update_cart_taxes_and_prices()
+        order._clear_alerts()
+        order.order_line.product_uom_qty = 2.0  # new cart: TaxCloud is called again
+        with self._patch_carts(side_effect=UNAVAILABLE):
+            self.assertTrue(order._update_cart_taxes_and_prices())
+        self.assertEqual([alert['level'] for alert in order._get_alerts()], ['danger'], order._get_alerts())
+
     def test_invalid_address_blocks(self):
         order = self._cart_order()
         with self._patch_carts(side_effect=INVALID) as create_carts:

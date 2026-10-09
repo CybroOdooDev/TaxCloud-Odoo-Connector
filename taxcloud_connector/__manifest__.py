@@ -1,7 +1,7 @@
 # Part of Cybrosys Technologies Pvt. Ltd. See LICENSE file for full copyright and licensing details.
 {
     'name': 'TaxCloud Connector',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Accounting/Accounting',
     'summary': 'US sales tax calculation, address verification and reporting with TaxCloud',
     'description': """

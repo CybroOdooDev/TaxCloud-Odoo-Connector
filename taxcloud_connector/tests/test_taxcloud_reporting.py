@@ -39,7 +39,7 @@ class TestTaxCloudReporting(TaxCloudInvoiceCommon):
         if order_id in self.orders:
             raise TaxCloudError('Order already exists', 400)
         cart = self.carts_sent[-1]['carts'][0]
-        self.orders[order_id] = {'orderId': order_id, 'customerId': cart['customerId'], 'refunds': []}
+        self.orders[order_id] = {'orderId': order_id, 'customerId': cart['customerId'], 'lineItems': cart['lineItems'], 'refunds': []}
         return self.orders[order_id]
 
     def _fake_get_order(self, client, order_id, expand_refunds=False):
@@ -136,9 +136,23 @@ class TestTaxCloudReporting(TaxCloudInvoiceCommon):
     def test_idempotent_retry_counts_existing_order(self):
         invoice = self._posted_invoice()
         order_id = invoice._taxcloud_get_report_order_id()
-        self.orders[order_id] = {'orderId': order_id, 'customerId': str(self.partner_us.id), 'refunds': []}
+        cart, _line_by_index = invoice._taxcloud_build_posted_cart()
+        self.orders[order_id] = {'orderId': order_id, 'customerId': cart['customerId'], 'lineItems': cart['lineItems'], 'refunds': []}
         self._run_cron()
         self.assertEqual(invoice.taxcloud_sync_state, 'synced')
+
+    def test_existing_order_with_other_items_is_error(self):
+        """ Same order ID and customer, but another document's items (e.g. reported by a copy of
+        this database): not counted as reported. """
+        invoice = self._posted_invoice()
+        order_id = invoice._taxcloud_get_report_order_id()
+        cart, _line_by_index = invoice._taxcloud_build_posted_cart()
+        other_items = [{**item, 'itemId': f"{item['itemId']}-other"} for item in cart['lineItems']]
+        self.orders[order_id] = {'orderId': order_id, 'customerId': cart['customerId'], 'lineItems': other_items, 'refunds': []}
+        self._run_cron()
+        self.assertEqual(invoice.taxcloud_sync_state, 'error')
+        self.assertIn('another database', invoice.taxcloud_sync_error)
+        self.assertFalse(invoice.taxcloud_order_id)
 
     def test_existing_order_of_other_customer_is_error(self):
         invoice = self._posted_invoice()
