@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="taxcloud_sales_tax_report_view_pivot" model="ir.ui.view">
+        <field name="name">taxcloud.sales.tax.report.view.pivot</field>
+        <field name="model">taxcloud.sales.tax.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Sales Tax by State" sample="1">
+                <field name="state_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="taxable_amount" type="measure"/>
+                <field name="non_taxable_amount" type="measure"/>
+                <field name="tax_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="taxcloud_sales_tax_report_view_graph" model="ir.ui.view">
+        <field name="name">taxcloud.sales.tax.report.view.graph</field>
+        <field name="model">taxcloud.sales.tax.report</field>
+        <field name="arch" type="xml">
+            <graph string="Sales Tax by State" type="bar" sample="1">
+                <field name="state_id"/>
+                <field name="tax_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="taxcloud_sales_tax_report_view_list" model="ir.ui.view">
+        <field name="name">taxcloud.sales.tax.report.view.list</field>
+        <field name="model">taxcloud.sales.tax.report</field>
+        <field name="arch" type="xml">
+            <list string="Sales Tax by State" create="0" edit="0" delete="0" sample="1">
+                <field name="date"/>
+                <field name="document_name"/>
+                <field name="source"/>
+                <field name="document_type"/>
+                <field name="partner_id"/>
+                <field name="product_id" optional="show"/>
+                <field name="state_id"/>
+                <field name="zip" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="sales_amount" sum="Total"/>
+                <field name="taxable_amount" sum="Total" optional="show"/>
+                <field name="non_taxable_amount" sum="Total" optional="show"/>
+                <field name="tax_amount" sum="Total"/>
+                <field name="total_amount" sum="Total" optional="hide"/>
+                <button name="action_open_document" type="object" string="Open" icon="fa-external-link" class="btn-link"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="taxcloud_sales_tax_report_view_search" model="ir.ui.view">
+        <field name="name">taxcloud.sales.tax.report.view.search</field>
+        <field name="model">taxcloud.sales.tax.report</field>
+        <field name="arch" type="xml">
+            <search string="Sales Tax by State">
+                <field name="state_id"/>
+                <field name="zip"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="document_name"/>
+                <filter name="filter_date" string="Date" date="date"/>
+                <separator/>
+                <filter name="sales" string="Sales" domain="[('document_type', '=', 'sale')]"/>
+                <filter name="refunds" string="Refunds" domain="[('document_type', '=', 'refund')]"/>
+                <separator/>
+                <filter name="invoices" string="Invoices" domain="[('source', '=', 'invoice')]"/>
+                <group>
+                    <filter name="group_state" string="State" context="{'group_by': 'state_id'}"/>
+                    <filter name="group_zip" string="ZIP" context="{'group_by': 'zip'}"/>
+                    <filter name="group_month" string="Month" context="{'group_by': 'date:month'}"/>
+                    <filter name="group_quarter" string="Quarter" context="{'group_by': 'date:quarter'}"/>
+                    <filter name="group_source" string="Source" context="{'group_by': 'source'}"/>
+                    <filter name="group_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_company" string="Company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_taxcloud_sales_tax_report" model="ir.actions.act_window">
+        <field name="name">Sales Tax by State</field>
+        <field name="res_model">taxcloud.sales.tax.report</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="taxcloud_sales_tax_report_view_search"/>
+        <field name="context">{'search_default_filter_date': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No TaxCloud sales yet</p>
+            <p>Posted invoices and paid orders whose taxes come from TaxCloud appear here, by US destination state.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_taxcloud_sales_tax_report"
+              name="Sales Tax by State (TaxCloud)"
+              parent="account.account_reports_taxes_and_fiscal_menu"
+              action="action_taxcloud_sales_tax_report"
+              groups="account.group_account_readonly,account.group_account_invoice"
+              sequence="50"/>
+</odoo>

@@ -15,10 +15,10 @@ portal and payment-link pages.
 
 | Module | Depends on | Installs | Content |
 |---|---|---|---|
-| `taxcloud_odoo_connector` | `account`, `payment` | manually | API client, settings, API log, address verification, invoice taxes, reporting, refunds, credits |
-| `taxcloud_connector_sale` | `taxcloud_odoo_connector`, `sale_management` (Sales app) | manually | quotations and sales orders, warehouse ship-from |
-| `taxcloud_connector_website_sale` | `taxcloud_connector_sale`, `website_sale` | manually | eCommerce checkout, payment guard |
-| `taxcloud_connector_pos` | `taxcloud_odoo_connector`, `point_of_sale` | manually | POS taxes at payment, POS order and refund reporting |
+| `taxcloud_odoo_connector_base` | `account`, `payment` | manually | API client, settings, API log, address verification, invoice taxes, reporting, refunds, credits |
+| `taxcloud_odoo_connector_sale` | `taxcloud_odoo_connector_base`, `sale_management` (Sales app) | manually | quotations and sales orders, warehouse ship-from |
+| `taxcloud_odoo_connector_website_sale` | `taxcloud_odoo_connector_sale`, `website_sale` | manually | eCommerce checkout, payment guard |
+| `taxcloud_odoo_connector_pos` | `taxcloud_odoo_connector_base`, `point_of_sale` | manually | POS taxes at payment, POS order and refund reporting |
 
 All modules run on Odoo Community and Enterprise. On Enterprise they can be installed next to
 Avatax: each document uses the provider of its fiscal position.
@@ -39,7 +39,7 @@ Only `requests` is needed in Python (already an Odoo requirement).
 ### 2. In Odoo
 
 1. Add the folder containing the modules to the addons path, e.g.
-   `--addons-path=...,/home/cybrosys/odoo20/custom/taxcloud_connector`, update the app list and
+   `--addons-path=...,<path_to_modules>`, update the app list and
    install **TaxCloud Connector**. Then install the bridge of each app you use: **TaxCloud
    Connector - Sales**, **- eCommerce**, **- Point of Sale**. They are not
    installed automatically; without the bridge, that app's documents get no TaxCloud tax.
@@ -69,12 +69,6 @@ Only `requests` is needed in Python (already an Odoo requirement).
 6. **Ship-from.** The company address, or with Inventory the order's warehouse address (see
    Flows). Make sure those addresses are complete (street, city, state, ZIP).
 
-### Upgrading
-
-These modules add stored fields to central models (contacts, invoices, orders). After updating
-the code, **upgrade from the command line** (`-u taxcloud_connector,...`), not with the
-*Upgrade* button in Apps. The Apps button reads contacts before the new columns exist and fails
-with `column ... does not exist`.
 
 ## Flows
 
@@ -202,98 +196,3 @@ created from an order keep its TaxCloud fiscal position and delivery address. Th
 - **Invoices of POS orders** keep the order's taxes and are not reported themselves, so the sale
   is not counted twice.
 
-## Errors and what happens
-
-| Situation | Where | Behaviour |
-|---|---|---|
-| No API key / connection ID / tax template | any calculation | Blocked, with a link to the settings |
-| Invalid address or content (400, 422) | posting, confirming, *Compute Taxes* | Blocked with TaxCloud's message (field and reason) |
-| TaxCloud unreachable (timeout, 429, 5xx) | backend | Retried in the call (exponential backoff, `Retry-After`), then blocked with the message |
-| TaxCloud unreachable | checkout | Blocking cart alert *try again in a few minutes*; payment refused; same cart not resent within the request |
-| Invalid address | checkout | Blocking cart alert with TaxCloud's details; payment refused |
-| Address verification fails | tax calculation | Address used as entered, never blocks |
-| Customer outside the US | tax calculation | No call, no US tax, one chatter note |
-| Currency not USD/CAD, incomplete customer or ship-from address | tax calculation | Blocked with the reason |
-| Order discount but only shipping/fee items | tax calculation | Blocked (TaxCloud would reject it) |
-| Reversal credit note with new lines, other prices, or more than invoiced | posting the credit note | Blocked: refunds are by item and quantity |
-| Reporting: 429 / 5xx / network | cron | *To Report* kept, yellow banner, retried up to **5** attempts, then *Error* |
-| Reporting: 400 / 422 | cron | Get Order: already there for this customer → *Reported*; otherwise *Error* at once |
-| Reporting: TaxCloud's tax ≠ posted tax | cron | *Error*: reset to draft, recompute, post again |
-| Reporting error | invoice | Red banner with the error and a **Retry** button (resets attempts, retries now) |
-| Refund before its invoice is reported | cron | Waits (blue banner), no attempt used |
-| Refund exceeds the refundable amount (422) | cron | *Error* |
-| TaxCloud refund tax ≠ Odoo credit-note tax | cron | Reported; chatter note with both amounts |
-| Void refused (after cutoff) / refunds reported | reset to draft | Blocked, invoice stays posted |
-| Any API call | API log | Errors always logged; successful calls only with debug logging (Accounting > Configuration > TaxCloud Logs) |
-
-The API log never contains the API key. With debug logging on, request bodies contain customer
-addresses; the log is readable by accounting managers only. Entries are written on a separate
-database cursor so they survive a rollback, and are purged daily after the retention period.
-
-## Known limits
-
-- **Down payments:** down-payment invoices are excluded, so their tax is neither
-  computed by TaxCloud nor reported. The final invoice reports the full order.
-- **One ship-from per cart:** goods shipped from several warehouses use the company address.
-- **Refunds are by item and quantity:** price adjustments on reversal credit notes are blocked.
-  Issue a standalone credit note instead (reported as a TaxCloud credit).
-- **Order IDs are document numbers:** they must be unique per TaxCloud connection. Companies
-  sharing a connection need distinct numbering (a clash is reported as an error, never filed).
-- **Void window:** TaxCloud allows voids only until the 10th of the month after completion.
-  - The void runs after Odoo's checks in the same transaction. If that transaction later failed,
-    TaxCloud would have voided an invoice that stays posted; no later step is known to fail.
-- **Payment then confirmation:** if TaxCloud fails while a paid website order is being confirmed
-  (it normally reuses the result computed before payment), Odoo's payment post-processing handles
-  the error.
-- **Exemptions:** certificates are referenced by ID only; create and manage them in TaxCloud.
-- **Excluded lines:** early payment discount and cash rounding lines are not sent to TaxCloud.
-- **Not sent:** TaxCloud's `productId` (it must match TaxCloud's catalog).
-- **Behaviour TaxCloud doesn't document,** handled conservatively:
-  - how an unverifiable address is reported (any 4xx = "not verified");
-  - whether 429/502–504 are retryable (treated as retryable);
-  - the status of a duplicate order ID (any 4xx, then Get Order);
-  - `orderId` character rules (restricted to letters, digits, `.`, `_` and `-`).
-- **Address verification** is US only (TaxCloud accepts only `US` there).
-- **POS:** a credit note made in Accounting from the invoice of a POS order is not reported;
-  return the goods with a POS refund instead.
-- **POS returns without the original order** (return mode) are taxed through a cart and reported
-  as a TaxCloud standalone credit.
-- **Rates can change after posting:** if TaxCloud computes a different tax for a posted invoice
-  when reporting, it is not reported until reset, recomputed and posted again.
-
-## Development
-
-- **Tests** are tagged `taxcloud` and mock every HTTP call; no TaxCloud account is needed:
-
-  ```
-  python odoo-bin -c odoo.conf \
-    --addons-path=<odoo>/addons,/home/cybrosys/odoo20/custom/taxcloud_connector \
-    -d <new_db> -i taxcloud_connector,sale_stock,website_sale,point_of_sale \
-    --test-enable --test-tags=taxcloud --stop-after-init
-  ```
-
-  Installing `sale_stock` exercises the warehouse ship-from tests.
-- **The client** (`taxcloud_connector/services/taxcloud_client.py`) has no ORM dependency and is
-  tested with a fake HTTP session. Errors raise `TaxCloudError(message, status_code, errors)` with
-  `is_retryable`.
-- **Per-document hooks** on `taxcloud.tax.mixin` (implemented by invoices, sales orders and POS
-  orders). Required: `_taxcloud_get_document_base_lines`, `_taxcloud_filter_eligible`. Optional:
-  - `_taxcloud_get_document_date`
-  - `_taxcloud_get_destination_partner`
-  - `_taxcloud_get_origin_partner`
-  - `_taxcloud_get_item_id`
-  - `_taxcloud_get_fixed_tax_amounts`
-
-## Decisions
-
-| Question | Decision |
-|---|---|
-| Licence | LGPL-3 for all modules |
-| Odoo edition | Community and Enterprise |
-| eCommerce, TaxCloud unreachable | Block payment |
-| eCommerce address verification | Silent, tax only |
-| When to report | On posting (accrual) |
-| Reset reported invoice to draft | Void the order; block if TaxCloud refuses or refunds exist |
-| Credit notes not from a reversal | Standalone TaxCloud credits |
-| Ship-from | Warehouse, else company |
-| Exemptions | Reference existing certificate IDs only |

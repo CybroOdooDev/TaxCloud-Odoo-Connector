@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="taxcloud_sales_tax_report_view_search_inherit_pos" model="ir.ui.view">
+        <field name="name">taxcloud.sales.tax.report.view.search.inherit.pos</field>
+        <field name="model">taxcloud.sales.tax.report</field>
+        <field name="inherit_id" ref="taxcloud_odoo_connector_base.taxcloud_sales_tax_report_view_search"/>
+        <field name="arch" type="xml">
+            <filter name="invoices" position="after">
+                <filter name="pos_orders" string="Point of Sale" domain="[('source', '=', 'pos')]"/>
+            </filter>
+        </field>
+    </record>
+</odoo>
