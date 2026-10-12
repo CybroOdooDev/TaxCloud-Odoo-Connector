@@ -17,7 +17,7 @@
 #############################################################################
 {
     'name': 'TaxCloud Connector',
-    'version': '20.0.1.0.2',
+    'version': '20.0.1.0.0',
     'category': 'Accounting/Accounting',
     'summary': 'US sales tax calculation, address verification and reporting with TaxCloud',
     'description': """

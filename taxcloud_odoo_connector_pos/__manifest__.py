@@ -17,7 +17,7 @@
 #############################################################################
 {
     'name': 'TaxCloud Connector - Point of Sale',
-    'version': '20.0.1.0.1',
+    'version': '20.0.1.0.0',
     'category': 'Sales/Point of Sale',
     'summary': 'Compute US sales tax with TaxCloud in the Point of Sale and report paid orders',
     'description': """
