@@ -29,7 +29,7 @@ Ship-from is the order's warehouse when Inventory is installed, otherwise the co
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['taxcloud_odoo_connector_base', 'sale_management'],
+    'depends': ['taxcloud_odoo_connector', 'sale_management'],
     'data': [
         'views/sale_order_views.xml',
     ],

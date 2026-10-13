@@ -23,7 +23,7 @@ from odoo import Command, fields
 from odoo.exceptions import UserError
 from odoo.tests import tagged
 
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import TaxCloudClient, TaxCloudError
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import TaxCloudClient, TaxCloudError
 from .common import TaxCloudInvoiceCommon
 
 
@@ -101,7 +101,7 @@ class TestTaxCloudReporting(TaxCloudInvoiceCommon):
     # Invoices
     # ========
     def test_post_marks_to_report_and_triggers_cron(self):
-        cron = self.env.ref('taxcloud_odoo_connector_base.ir_cron_taxcloud_report')
+        cron = self.env.ref('taxcloud_odoo_connector.ir_cron_taxcloud_report')
         triggers_before = self.env['ir.cron.trigger'].search_count([('cron_id', '=', cron.id)])
         invoice = self._posted_invoice()
         self.assertEqual(invoice.taxcloud_sync_state, 'to_sync')

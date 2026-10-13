@@ -23,7 +23,7 @@ class AccountMove(models.Model):
 
     @api.depends('pos_order_ids', 'reversed_entry_id.pos_order_ids')
     def _compute_is_taxcloud_computed(self):
-        # EXTENDS 'taxcloud_odoo_connector_base': an invoice of POS orders keeps the taxes computed for the
+        # EXTENDS 'taxcloud_odoo_connector': an invoice of POS orders keeps the taxes computed for the
         # orders, which are reported to TaxCloud themselves; reporting the invoice too would count
         # the sale twice.
         super()._compute_is_taxcloud_computed()

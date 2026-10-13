@@ -24,7 +24,7 @@ from odoo import Command, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools import format_amount, html2plaintext
 
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import TaxCloudError
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import TaxCloudError
 
 TAXCLOUD_CURRENCIES = ('USD', 'CAD')
 

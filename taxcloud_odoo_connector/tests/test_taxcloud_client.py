@@ -22,7 +22,7 @@ import requests
 
 from odoo.tests import BaseCase, tagged
 
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import BASE_URL, TaxCloudClient, TaxCloudError
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import BASE_URL, TaxCloudClient, TaxCloudError
 from .common import FAKE_API_KEY, FakeResponse, FakeSession
 
 PROBLEM_422 = {
@@ -186,5 +186,5 @@ class TestTaxCloudClient(BaseCase):
             raise RuntimeError('log failure')
         client = TaxCloudClient(FAKE_API_KEY, 'conn-1', session=FakeSession(FakeResponse(200, {'ok': 1})),
                                 log_hook=broken_hook)
-        with self.assertLogs('odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client', 'ERROR'):
+        with self.assertLogs('odoo.addons.taxcloud_odoo_connector.services.taxcloud_client', 'ERROR'):
             self.assertEqual(client.ping(), {'ok': 1})

@@ -19,7 +19,7 @@ from odoo import api, fields, models
 from odoo.exceptions import RedirectWarning, ValidationError
 from odoo.http import request
 
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import TaxCloudClient
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import TaxCloudClient
 
 
 class ResCompany(models.Model):

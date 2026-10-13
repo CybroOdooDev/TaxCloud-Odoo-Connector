@@ -20,8 +20,8 @@ from unittest.mock import patch
 from odoo.exceptions import UserError
 from odoo.tests import tagged
 
-from odoo.addons.taxcloud_odoo_connector_base.models import res_partner as res_partner_module
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import TaxCloudClient, TaxCloudError
+from odoo.addons.taxcloud_odoo_connector.models import res_partner as res_partner_module
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import TaxCloudClient, TaxCloudError
 from .common import TaxCloudTestCommon
 
 VERIFIED = {

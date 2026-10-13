@@ -18,7 +18,7 @@
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import TaxCloudError
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import TaxCloudError
 
 
 class AccountMove(models.Model):
@@ -121,7 +121,7 @@ class AccountMove(models.Model):
     # taxcloud.report.mixin hooks
     # ===========================
     def _taxcloud_get_report_cron(self):
-        return self.env.ref('taxcloud_odoo_connector_base.ir_cron_taxcloud_report')
+        return self.env.ref('taxcloud_odoo_connector.ir_cron_taxcloud_report')
 
     def _taxcloud_get_report_date(self):
         return self.invoice_date or self.date

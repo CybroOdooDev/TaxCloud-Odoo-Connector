@@ -21,7 +21,7 @@ from odoo import Command
 from odoo.exceptions import AccessError, RedirectWarning, UserError, ValidationError
 from odoo.tests import Form, tagged
 
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import TaxCloudClient, TaxCloudError
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import TaxCloudClient, TaxCloudError
 from .common import FAKE_API_KEY, FAKE_CONNECTION_ID, TaxCloudTestCommon
 
 

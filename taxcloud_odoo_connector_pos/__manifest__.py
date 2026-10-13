@@ -29,7 +29,7 @@ to TaxCloud.
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['taxcloud_odoo_connector_base', 'point_of_sale'],
+    'depends': ['taxcloud_odoo_connector', 'point_of_sale'],
     'data': [
         'data/ir_cron_data.xml',
         'views/pos_order_views.xml',

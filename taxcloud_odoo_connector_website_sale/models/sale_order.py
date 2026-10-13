@@ -18,7 +18,7 @@
 from odoo import models
 from odoo.exceptions import UserError
 
-from odoo.addons.taxcloud_odoo_connector_base.models.taxcloud_tax_mixin import TaxCloudUnavailableError
+from odoo.addons.taxcloud_odoo_connector.models.taxcloud_tax_mixin import TaxCloudUnavailableError
 
 
 class SaleOrder(models.Model):

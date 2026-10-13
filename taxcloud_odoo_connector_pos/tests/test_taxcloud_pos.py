@@ -23,9 +23,9 @@ from odoo import Command, fields
 from odoo.exceptions import UserError
 from odoo.tests import tagged
 
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import TaxCloudClient, TaxCloudError
-from odoo.addons.taxcloud_odoo_connector_base.tests.common import TaxCloudInvoiceCommon
-from odoo.addons.taxcloud_odoo_connector_base.tests import test_taxcloud_reporting
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import TaxCloudClient, TaxCloudError
+from odoo.addons.taxcloud_odoo_connector.tests.common import TaxCloudInvoiceCommon
+from odoo.addons.taxcloud_odoo_connector.tests import test_taxcloud_reporting
 
 
 @tagged('post_install', '-at_install', 'taxcloud')

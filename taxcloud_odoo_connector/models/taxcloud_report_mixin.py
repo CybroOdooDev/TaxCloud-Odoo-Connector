@@ -22,7 +22,7 @@ from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.modules import module
 
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import TaxCloudError
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import TaxCloudError
 
 _logger = logging.getLogger(__name__)
 

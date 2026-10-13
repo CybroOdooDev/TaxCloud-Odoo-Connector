@@ -20,7 +20,7 @@ from datetime import timedelta
 from odoo import fields
 from odoo.tests import tagged
 
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import TaxCloudError
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import TaxCloudError
 from .common import FAKE_API_KEY, FakeResponse, FakeSession, TaxCloudTestCommon
 
 
@@ -112,5 +112,5 @@ class TestTaxCloudLog(TaxCloudTestCommon):
         self.assertTrue(log.exists())
 
     def test_cron_record(self):
-        cron = self.env.ref('taxcloud_odoo_connector_base.ir_cron_taxcloud_purge_logs')
+        cron = self.env.ref('taxcloud_odoo_connector.ir_cron_taxcloud_purge_logs')
         self.assertEqual(cron.model_id.model, 'taxcloud.log')

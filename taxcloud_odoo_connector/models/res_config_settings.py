@@ -18,7 +18,7 @@
 from odoo import fields, models
 from odoo.exceptions import UserError
 
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import TaxCloudError
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import TaxCloudError
 
 
 class ResConfigSettings(models.TransientModel):

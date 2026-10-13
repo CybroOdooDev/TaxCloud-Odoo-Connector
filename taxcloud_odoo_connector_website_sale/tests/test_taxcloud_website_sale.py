@@ -20,9 +20,9 @@ from unittest.mock import patch
 from odoo import Command
 from odoo.tests import tagged
 
-from odoo.addons.taxcloud_odoo_connector_base.models import res_partner as res_partner_module
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import TaxCloudClient, TaxCloudError
-from odoo.addons.taxcloud_odoo_connector_base.tests.common import TaxCloudInvoiceCommon
+from odoo.addons.taxcloud_odoo_connector.models import res_partner as res_partner_module
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import TaxCloudClient, TaxCloudError
+from odoo.addons.taxcloud_odoo_connector.tests.common import TaxCloudInvoiceCommon
 from odoo.addons.website_sale.tests.common import MockRequest
 from odoo.addons.taxcloud_odoo_connector_website_sale.controllers.main import TaxCloudDelivery
 

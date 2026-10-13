@@ -21,7 +21,7 @@ from unittest.mock import patch
 from odoo import Command
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
-from odoo.addons.taxcloud_odoo_connector_base.services.taxcloud_client import TaxCloudClient
+from odoo.addons.taxcloud_odoo_connector.services.taxcloud_client import TaxCloudClient
 
 FAKE_API_KEY = 'fake-api-key-for-tests'
 FAKE_CONNECTION_ID = 'fake-connection-id'

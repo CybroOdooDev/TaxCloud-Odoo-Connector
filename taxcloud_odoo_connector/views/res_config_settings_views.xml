@@ -44,7 +44,7 @@
                                 <i class="fa fa-plug fa-fw" role="img" aria-label="Test connection" title="Test connection"/>
                                 Test Connection
                             </button>
-                            <button name="%(taxcloud_odoo_connector_base.action_taxcloud_log)d" type="action" class="btn btn-secondary">
+                            <button name="%(taxcloud_odoo_connector.action_taxcloud_log)d" type="action" class="btn btn-secondary">
                                 <i class="fa fa-file-text-o fa-fw" role="img" aria-label="Show logs" title="Show logs"/>
                                 Show Logs
                             </button>

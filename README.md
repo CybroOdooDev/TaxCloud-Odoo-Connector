@@ -15,10 +15,10 @@ portal and payment-link pages.
 
 | Module | Depends on | Installs | Content |
 |---|---|---|---|
-| `taxcloud_odoo_connector_base` | `account`, `payment` | manually | API client, settings, API log, address verification, invoice taxes, reporting, refunds, credits |
-| `taxcloud_odoo_connector_sale` | `taxcloud_odoo_connector_base`, `sale_management` (Sales app) | manually | quotations and sales orders, warehouse ship-from |
+| `taxcloud_odoo_connector` | `account`, `payment` | manually | API client, settings, API log, address verification, invoice taxes, reporting, refunds, credits |
+| `taxcloud_odoo_connector_sale` | `taxcloud_odoo_connector`, `sale_management` (Sales app) | manually | quotations and sales orders, warehouse ship-from |
 | `taxcloud_odoo_connector_website_sale` | `taxcloud_odoo_connector_sale`, `website_sale` | manually | eCommerce checkout, payment guard |
-| `taxcloud_odoo_connector_pos` | `taxcloud_odoo_connector_base`, `point_of_sale` | manually | POS taxes at payment, POS order and refund reporting |
+| `taxcloud_odoo_connector_pos` | `taxcloud_odoo_connector`, `point_of_sale` | manually | POS taxes at payment, POS order and refund reporting |
 
 All modules run on Odoo Community and Enterprise. On Enterprise they can be installed next to
 Avatax: each document uses the provider of its fiscal position.

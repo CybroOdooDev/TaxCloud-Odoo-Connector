@@ -71,7 +71,7 @@ class TaxCloudSalesTaxReport(models.Model):
         }
 
     def _taxcloud_report_invoice_where(self):
-        # EXTENDS 'taxcloud_odoo_connector_base': an invoice of POS orders is counted with the orders.
+        # EXTENDS 'taxcloud_odoo_connector': an invoice of POS orders is counted with the orders.
         return SQL("%s AND NOT EXISTS (%s)", super()._taxcloud_report_invoice_where(), SQL("""
             SELECT 1 FROM pos_order
             WHERE pos_order.account_move IN (am.id, am.reversed_entry_id)
